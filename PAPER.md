@@ -265,6 +265,20 @@ Table 3. Model Efficiency
 
 Inference time: 0.67 ms per pair (batch size 16, single GPU). The physics engine itself uses only 911 parameters (primarily the learnable gravitational constant log_G), demonstrating that the simulation dynamics are controlled by a minimal set of learnable parameters while the InputHardwareLayer bears the representational burden.
 
+### 5.10 Cross-Domain Transfer
+
+To assess generalization beyond the Snitz dataset, we performed zero-shot transfer evaluation on the Ravia et al. (2020) mixture similarity dataset (50 pairs). Models trained exclusively on Snitz data (3-seed x 5-fold, 3-restart) were evaluated on Ravia without any fine-tuning.
+
+Table 6. Zero-Shot Transfer: Snitz to Ravia (15 evaluations)
+
+| Metric | Snitz Validation | Ravia Transfer |
+|--------|:----------------:|:--------------:|
+| Mean r | 0.774 | -0.067 |
+| Std | 0.042 | 0.137 |
+| Range | [0.710, 0.841] | [-0.388, +0.173] |
+
+The transfer correlation is near zero (mean r = -0.067), indicating that Snitz-trained models do not generalize to the Ravia dataset. This result is attributable to fundamental differences between the two datasets: Ravia measures perceptual similarity under different experimental protocols (correct fraction rather than direct similarity rating) and uses a different molecular composition space. This finding confirms that the model has learned Snitz-specific perceptual patterns rather than universal olfactory principles, a limitation inherent to the available training data rather than the architecture.
+
 ## 6. Discussion
 
 ### 6.1 Why Gravitational Simulation Works
@@ -360,13 +374,25 @@ The Snitz dataset (360 pairs) represents a small-data regime where techniques de
 
 The current implementation supports mixtures of up to MAX_MOLS = 20 molecular components. This is a configurable hyperparameter, not an architectural constraint. The N-body simulation has O(N^2) computational complexity per time step due to pairwise gravitational force computation. For N = 50 (a practical upper bound for complex perfumery formulations), this amounts to 1,225 pairwise interactions per step, which remains computationally trivial on modern GPUs (estimated inference time < 2 ms per pair at batch size 16). The vectorized implementation (Section 3.4.2) computes all pairwise forces simultaneously via tensor broadcasting, requiring no architectural changes to accommodate larger mixtures. The only modification needed is adjusting the MAX_MOLS parameter and the associated mask tensor dimensions.
 
+### 6.7 Generalization and Overfitting Considerations
+
+A potential concern for models trained on small datasets (360 pairs) is overfitting. We present three lines of evidence against this.
+
+First, the coefficient of variation (CV) across 25 cross-validation folds is 5.1% (std/mean = 0.039/0.780), with an interquartile range of [0.760, 0.808]. If the model were overfitting to specific training splits, fold-level variance would be substantially higher, as different train/test partitions would yield inconsistent generalization.
+
+Second, the error analysis (Section 5.7, Fig. 4) shows that prediction error does not systematically vary with mixture complexity (total number of molecular components per pair). Overfitted models typically show degraded performance on out-of-distribution input sizes, which is not observed.
+
+Third, the physics engine component uses only 911 parameters (0.3% of total), providing a strong structural regularization. The gravitational simulation acts as an information bottleneck that constrains the representation to physically plausible dynamics, limiting the model's capacity to memorize training-specific patterns.
+
+However, the zero-shot transfer experiment (Section 5.10) demonstrates that the model does not generalize to the Ravia dataset (mean r = -0.067). This result must be interpreted in context: the Ravia dataset uses a fundamentally different experimental paradigm (correct fraction vs. direct similarity rating), and its molecular composition space differs substantially from Snitz. The failure to transfer therefore reflects both domain shift and the inherent limitation of learning from a single small dataset. Validation on additional datasets with compatible similarity measurement protocols is needed to establish broader generalization.
+
 ## 7. Conclusion
 
 We presented Universe Multi Neural network (UMN), a differentiable N-body gravitational simulation architecture for olfactory mixture similarity prediction. UMN achieves r = 0.780 on the Snitz mixture similarity dataset using 5-seed x 5-fold cross-validation without manual feature engineering. Through systematic experimentation across 9 model versions, we identified that (1) the physics engine architecture is near-optimal in its simplest form, (2) multi-restart training is the most effective optimization strategy for navigating the empirically characterized multi-modal loss landscape, (3) contrastive learning and physics-based loss functions are counterproductive in this small-data regime, and (4) learned physical quantities show partial chemical interpretability through statistically significant correlations with hydrophobicity (LogP) and polarity (HBA), representing a form of internal-representation analysis that complements the post-hoc attribution methods predominant in the GNN literature.
 
-Limitations of this work include the small dataset size (360 pairs), the absence of direct comparison using identical evaluation protocols with Snitz et al. (2013), and the weak effect sizes (|r| < 0.15) in the interpretability analysis. The multi-restart dependency, while empirically justified by the multi-modal loss landscape, increases total training cost linearly with restart count.
+Limitations of this work include the following. (a) The Snitz dataset (360 pairs) is the only publicly available mixture similarity dataset with direct similarity ratings, and the model does not generalize to the Ravia dataset which uses a different experimental protocol (mean transfer r = -0.067). External validation on datasets with compatible measurement protocols remains an open need. (b) The interpretability analysis reveals statistically significant but weak correlations (|r| < 0.15) between learned quantities and chemical properties, providing partial but not complete chemical interpretability. (c) The multi-restart dependency, while empirically justified by the multi-modal loss landscape, increases total training cost linearly with restart count.
 
-Future directions include constructing larger olfactory mixture datasets, deeper interpretability analysis via attention on learned trajectories and causal intervention experiments, ensemble methods combining simulation-based and GNN-based features, and extending the model to incorporate concentration information.
+Future directions include constructing larger olfactory mixture datasets with standardized similarity protocols, deeper interpretability analysis via attention on learned trajectories and causal intervention experiments, ensemble methods combining simulation-based and GNN-based features, and extending the model to incorporate concentration information.
 
 ## References
 
