@@ -152,17 +152,20 @@ Restart 횟수의 증가가 SWA, Warmup, Cosine Decay 등의 학습 기법보다
 
 ### 외부 Baseline 비교
 
-OlfaBind의 성능을 맥락화하기 위해 외부 baseline과 비교한다.
+OlfaBind의 성능을 맥락화하기 위해 외부 baseline 및 기존 연구와 비교한다.
 
-| Baseline | Pearson r | 설명 |
-|----------|:---------:|------|
-| OlfaBind v25 (10-restart) | 0.780 | 본 모델 |
-| Tanimoto Similarity | 0.439 | 평균 쌍별 Tanimoto 유사도 |
-| Component Count Ratio | 0.417 | 구성 분자 수 비율 |
-| Random Prediction | ~0.0 | 균등 분포 랜덤 예측 |
-| Mean Prediction | 0.0 | 상수 예측 (평균값) |
+| 방법 | Pearson r | 평가 방식 | 설명 |
+|------|:---------:|:---------:|------|
+| Snitz et al. (2013) 최적화 | 0.85 | Train/Test 분할 | 1433개 물리화학 서술자에서 21개를 선택, 코사인 각도 거리 기반 |
+| OlfaBind v25 (10-restart) | 0.780 | 5-seed x 5-fold CV | 본 모델 (end-to-end 학습, 수작업 특징 선택 없음) |
+| Snitz et al. (2013) 단순 | >=0.49 | Train/Test 분할 | 단일 구조 벡터로 혼합물 표현, 특징 선택 없음 |
+| Tanimoto Similarity | 0.439 | 전체 데이터 | 평균 쌍별 Tanimoto 유사도 |
+| Component Count Ratio | 0.417 | 전체 데이터 | 구성 분자 수 비율 |
+| Random / Mean Prediction | ~0.0 | - | 랜덤 또는 상수 예측 |
 
-OlfaBind는 화학적 유사도 기반 baseline(Tanimoto, r=0.439)보다 77.6% 높은 상관 계수를 달성하여, 물리 시뮬레이션 기반 표현이 지각적 유사도 예측에 유의미한 기여를 함을 보여준다.
+비교 시 주의점: Snitz et al. (2013)의 r=0.85는 1433개 물리화학 서술자(분자량, LogP, 극성 표면적 등)에서 최적의 21개를 선택하는 과정이 포함되어 있으며, 단순 train/test 분할로 평가되었다. OlfaBind는 Morgan Fingerprint만을 입력으로 사용하고 수작업 특징 선택 없이 end-to-end로 학습하며, 더 엄격한 5-seed x 5-fold CV로 평가되었다. Snitz의 단순 모델(특징 선택 없음, r>=0.49)과 비교하면 OlfaBind(r=0.780)는 59% 이상의 성능 향상을 보인다.
+
+OlfaBind의 핵심 장점은 도메인 전문가의 특징 선택(feature engineering) 없이 분자 지문에서 직접 물리 시뮬레이션을 통해 혼합물 수준의 상호작용을 학습한다는 것이다.
 
 ### 5-Seed x 5-Fold Cross-Validation (Snitz et al., 2013 데이터셋)
 
