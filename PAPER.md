@@ -244,7 +244,11 @@ Fig. 3 shows the distribution of Pearson r across 25 folds for each strategy. Th
 
 ![Fig. 4. Error Analysis](figures/error_analysis.png)
 
-Fig. 4 (left) shows predicted versus true similarity. The model tends to underpredict extremely high similarities (true = 100, identical mixtures), with prediction errors up to 44 points. Mid-range similarities (40-60) are predicted with the highest accuracy (mean absolute error < 5). Fig. 4 (right) shows that prediction error does not systematically vary with mixture complexity (total number of components), indicating that the model handles variable-size mixtures consistently.
+Fig. 4 (left) shows predicted versus true similarity. The model tends to underpredict extremely high similarities (true = 100, identical mixtures), with prediction errors up to 44 points. This pattern is consistent with regression toward the mean, a well-known statistical phenomenon in regression models trained with MSE loss: because the training distribution is centered around moderate similarity values (mean approximately 50), the model's optimal strategy under MSE is to predict values closer to the distributional mean, particularly for extreme values that are underrepresented in the training set. With only 360 pairs, the number of examples at the extreme ends (similarity near 0 or 100) is too small to counteract this tendency. This is not a UMN-specific limitation but rather a general property of regression models on small, non-uniformly distributed datasets.
+
+Mid-range similarities (40-60) are predicted with the highest accuracy (mean absolute error < 5), which is the range most densely populated in the training data and where the MSE-optimal regression surface is best constrained.
+
+Fig. 4 (right) shows that prediction error does not systematically vary with mixture complexity (total number of components), indicating that the model handles variable-size mixtures consistently. This complexity independence provides evidence that the physics simulation generalizes across different mixture sizes rather than overfitting to a particular size distribution.
 
 ### 5.8 Embedding Visualization
 
@@ -277,7 +281,15 @@ Table 6. Zero-Shot Transfer: Snitz to Ravia (15 evaluations)
 | Std | 0.042 | 0.137 |
 | Range | [0.710, 0.841] | [-0.388, +0.173] |
 
-The transfer correlation is near zero (mean r = -0.067), indicating that Snitz-trained models do not generalize to the Ravia dataset. This result is attributable to fundamental differences between the two datasets: Ravia measures perceptual similarity under different experimental protocols (correct fraction rather than direct similarity rating) and uses a different molecular composition space. This finding confirms that the model has learned Snitz-specific perceptual patterns rather than universal olfactory principles, a limitation inherent to the available training data rather than the architecture.
+The transfer correlation is near zero (mean r = -0.067), indicating that Snitz-trained models do not generalize to the Ravia dataset. This result is attributable to fundamental differences between the two datasets at multiple levels:
+
+(a) Measurement construct: Snitz collects direct perceptual similarity ratings on a continuous scale (0-100), while Ravia measures correct fraction in a discrimination task. These are related but distinct psychophysical constructs; a model trained to predict perceived similarity is not expected to directly predict discriminability without recalibration.
+
+(b) Molecular composition: The two datasets use different sets of odorant molecules with limited overlap, meaning the model encounters unseen molecular fingerprints at transfer time.
+
+(c) Experimental conditions: Differences in stimulus presentation, concentration normalization, and subject population between the two studies introduce additional distributional shift.
+
+Importantly, this limitation is not specific to UMN. The Snitz et al. (2013) baseline model (r = 0.85) was also evaluated exclusively on the Snitz dataset, and no published olfactory mixture similarity model has demonstrated cross-dataset generalization to date. The absence of standardized, cross-compatible mixture similarity benchmarks remains a fundamental bottleneck for the field. This finding underscores the need for multi-laboratory datasets with harmonized experimental protocols.
 
 ## 6. Discussion
 
@@ -384,7 +396,7 @@ Second, the error analysis (Section 5.7, Fig. 4) shows that prediction error doe
 
 Third, the physics engine component uses only 911 parameters (0.3% of total), providing a strong structural regularization. The gravitational simulation acts as an information bottleneck that constrains the representation to physically plausible dynamics, limiting the model's capacity to memorize training-specific patterns.
 
-However, the zero-shot transfer experiment (Section 5.10) demonstrates that the model does not generalize to the Ravia dataset (mean r = -0.067). This result must be interpreted in context: the Ravia dataset uses a fundamentally different experimental paradigm (correct fraction vs. direct similarity rating), and its molecular composition space differs substantially from Snitz. The failure to transfer therefore reflects both domain shift and the inherent limitation of learning from a single small dataset. Validation on additional datasets with compatible similarity measurement protocols is needed to establish broader generalization.
+However, the zero-shot transfer experiment (Section 5.10) demonstrates that the model does not generalize to the Ravia dataset (mean r = -0.067). This result must be interpreted carefully. Snitz and Ravia measure different psychophysical constructs (perceived similarity vs. discrimination correct fraction) under different experimental protocols, with different molecular compositions and limited molecular overlap. Transfer failure under such pronounced domain shift does not constitute evidence of overfitting to the Snitz training data; rather, it reflects the absence of cross-compatible benchmarks in the olfactory mixture literature. No published mixture similarity model, including the Snitz et al. (2013) baseline itself, has demonstrated generalization across datasets with incompatible measurement protocols. Establishing broader generalization requires future datasets that adopt standardized similarity measurement protocols across laboratories and stimulus sets.
 
 ## 7. Conclusion
 

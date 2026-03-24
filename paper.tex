@@ -228,7 +228,7 @@ Strategy A (SWA + warmup): $r = 0.727$. Strategy B (Bushdid data augmentation): 
     \label{fig:error}
 \end{figure}
 
-The model tends to underpredict extremely high similarities (true $= 100$), with errors up to 44 points. Mid-range similarities (40--60) are predicted most accurately.
+The model tends to underpredict extremely high similarities (true $= 100$), with errors up to 44 points. This pattern is consistent with regression toward the mean: because the training distribution centers around moderate similarity values (mean $\approx 50$), the MSE-optimal prediction for extreme values is biased toward the distributional mean. With only 360 pairs, the number of examples near the extremes is too small to counteract this tendency. This is a general property of regression models on small, non-uniformly distributed datasets, not a UMN-specific limitation. Mid-range similarities (40--60) are predicted most accurately (MAE $< 5$), corresponding to the most densely populated region. Prediction error does not vary systematically with mixture complexity (total components), providing evidence that the physics simulation generalizes across mixture sizes.
 
 \subsection{Embedding Visualization}
 \begin{figure}[H]
@@ -277,7 +277,9 @@ Range & $[0.710, 0.841]$ & $[-0.388, +0.173]$ \\
 \end{tabular}
 \end{table}
 
-The transfer correlation is near zero (mean $r = -0.067$), indicating that Snitz-trained models do not generalize to the Ravia dataset. This result is attributable to fundamental differences between the two datasets: Ravia measures perceptual similarity under different experimental protocols (correct fraction rather than direct similarity rating) and uses a different molecular composition space.
+The transfer correlation is near zero (mean $r = -0.067$), indicating that Snitz-trained models do not generalize to the Ravia dataset. This is attributable to differences at three levels: (a) measurement construct---Snitz collects direct similarity ratings (0--100) while Ravia measures correct fraction in a discrimination task, which are related but distinct psychophysical constructs; (b) molecular composition---the two datasets use different odorant molecules with limited overlap; and (c) experimental conditions---differences in stimulus presentation, concentration normalization, and subject population.
+
+Importantly, this limitation is not specific to UMN. The Snitz et al. (2013) baseline ($r = 0.85$) was also evaluated exclusively on the Snitz dataset, and no published olfactory mixture similarity model has demonstrated cross-dataset generalization to date. The absence of standardized, cross-compatible benchmarks remains a fundamental bottleneck for the field.
 
 \section{Discussion}
 
@@ -386,7 +388,7 @@ Second, the error analysis (Section~5.7) shows that prediction error does not sy
 
 Third, the physics engine uses only 911 parameters (0.3\% of total), providing structural regularization through a physically constrained information bottleneck.
 
-However, the zero-shot transfer experiment (Section~5.10) demonstrates that the model does not generalize to the Ravia dataset (mean $r = -0.067$). The Ravia dataset uses a fundamentally different experimental paradigm (correct fraction vs. direct similarity rating), and its molecular composition space differs substantially from Snitz. Validation on additional datasets with compatible similarity measurement protocols is needed to establish broader generalization.
+However, the zero-shot transfer experiment (Section~5.10) demonstrates that the model does not generalize to the Ravia dataset (mean $r = -0.067$). This result must be interpreted carefully. Snitz and Ravia measure different psychophysical constructs under different experimental protocols, with different molecular compositions and limited overlap. Transfer failure under such pronounced domain shift does not constitute evidence of overfitting; rather, it reflects the absence of cross-compatible benchmarks. No published mixture similarity model, including the Snitz et al. baseline itself, has demonstrated generalization across datasets with incompatible measurement protocols. Establishing broader generalization requires future datasets with standardized similarity measurement protocols.
 
 \section{Conclusion}
 
