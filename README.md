@@ -4,7 +4,7 @@
 
 Junseong Kim, University of Suwon
 
-[![Paper](https://img.shields.io/badge/Paper-ChemRxiv-blue)](https://chemrxiv.org)
+[![Paper](https://img.shields.io/badge/Paper-ChemRxiv-blue)](https://doi.org/10.26434/chemrxiv.15001285/v1)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Overview
