@@ -2,9 +2,7 @@
 
 Junseong Kim, University of Suwon
 
-Preprint: https://doi.org/10.26434/chemrxiv.15001664/v1
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Paper](https://img.shields.io/badge/Paper-PDF-blue)](https://doi.org/10.26434/chemrxiv.15001664/v1) [![ChemRxiv](https://img.shields.io/badge/ChemRxiv-Preprint-orange)](https://doi.org/10.26434/chemrxiv.15001664/v1) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
